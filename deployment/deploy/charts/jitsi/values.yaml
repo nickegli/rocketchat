@@ -1,0 +1,34 @@
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+nameOverride: ""
+fullnameOverride: ""
+
+securityContext: {}
+
+image: 
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  sessionAffinity: None
+  port: 80
+
+ingress:
+  annotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+deployment:
+  rollingUpdate:
+    maxSurge: 2
+    maxUnavailable: 1
+
+resources: {}
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

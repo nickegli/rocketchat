@@ -1,0 +1,63 @@
+{{/* #### rocketchat #### */}}
+{{  $contxt := .Values.rocketchat }}
+
+image:
+  registry: {{ $contxt.image.registry }}
+  repository: {{ $contxt.image.repository }}
+  tag: {{ $contxt.image.tag }}
+  pullSecrets: {{ .Values.pullSecrets }}
+
+org: {{ .Values.org }}
+arch: {{ .Values.arch }}
+appVersion: {{ $contxt.appVersion }}
+baseVersion: {{ $contxt.baseVersion }}
+env: {{ .Values.env }}
+
+{{ if $contxt.ingress.enabled }}
+ingress:
+  enabled: true
+  hosts:
+  - host: {{ $contxt.ingress.host }}
+    paths: [{{ $contxt.ingress.path }}]
+  tls:
+  - secretName: {{ $contxt.ingress.tlsSecretName }}
+    hosts:
+    - {{ $contxt.ingress.host }}
+{{ end }}
+
+replicaCount: {{ $contxt.replicaCount }}
+
+secrets:
+{{ range $k, $v := $contxt.secrets }}
+  {{ $k }}: "{{ $v }}"
+{{ end }}
+
+
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        # Selection ppc64le / x86 Node 
+        - key: beta.kubernetes.io/arch
+          operator: In
+          values:
+          - {{ .Values.arch }}
+        # Selection Test/Integ/Prod Environment
+        - key: env
+          operator: In
+          values:
+          - {{ .Values.env }}
+        # Selection Worker for dees
+        - key: liberty
+          operator: In
+          values:
+          - "true"
+
+resources:
+{{- range $k, $v := $contxt.resources }}
+  {{ $k }}: 
+    {{- range $k1, $v1 :=  . }}
+       {{ $k1 }}: "{{ $v1 }}"
+{{- end }}
+{{- end }}

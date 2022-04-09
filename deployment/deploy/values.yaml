@@ -1,0 +1,46 @@
+org: "stzh"
+arch: "amd64"
+nodeArch: "amd64"
+project: "rocket"
+
+rocketchat:
+  appVersion: "0.1.10"
+  baseVersion: "12.20.0-buster-slim"
+  image:
+    registry: "nexus.intra.stzh.ch:18080"
+    repository: "x86_64/stzh/rocket-chat/rocket-chat"
+    tag: "0.1.10-12.20.0-buster-slim"
+  ingress:
+    enabled: "true"
+    tlsSecretName: "ingress-tls.default"
+  secrets: {}
+
+mongodb:
+  repository: "x86_64/stzh/mongodb/bitnami-mongodb"
+  tag: "4.2.9"
+
+jitsi:
+  appVersion: "0.1.2"
+  baseVersion: "stable-5142"
+  registry: "nexus.intra.stzh.ch:18080"
+
+  jicofo:
+    repository: "x86_64/stzh/rocket-chat/jitsi-jicofo"
+    tag: "0.1.4-stable-5142"
+
+  jvb:
+    repository: "x86_64/stzh/rocket-chat/jitsi-jvb"
+    tag: "0.1.2-stable-5142"
+
+  prosody:
+    repository: "x86_64/stzh/rocket-chat/jitsi-prosody"
+    tag: "0.1.4-stable-5142"
+
+  web:
+    repository: "x86_64/stzh/rocket-chat/jitsi-web"
+    tag: "0.1.2-stable-5142"
+
+  ingress:
+    enabled: "true"
+    tlsSecretName: "ingress-tls.default"
+  secrets: {}

@@ -1,0 +1,104 @@
+{{/* #### jitsi #### */}}
+{{  $contxt := .Values.jitsi }}
+
+org: {{ .Values.org }}
+arch: {{ .Values.arch }}
+appVersion: {{ $contxt.appVersion }}
+baseVersion: {{ $contxt.baseVersion }}
+env: {{ .Values.env }}
+
+image:
+  registry: {{ $contxt.registry }}
+  pullSecrets: {{ .Values.pullSecrets }}
+
+replicaCount: {{ $contxt.replicaCount }}
+
+{{ if $contxt.ingress.enabled }}
+ingress:
+  enabled: true
+  hosts:
+  - host: {{ $contxt.ingress.host }}
+    paths: [{{ $contxt.ingress.path }}]
+  tls:
+  - secretName: {{ $contxt.ingress.tlsSecretName }}
+    hosts:
+    - {{ $contxt.ingress.host }}
+{{ end }}
+
+secrets:
+{{ range $k, $v := $contxt.secrets }}
+  {{ $k }}: "{{ $v }}"
+{{ end }}
+
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        # Selection ppc64le / x86 Node 
+        - key: beta.kubernetes.io/arch
+          operator: In
+          values:
+          - {{ .Values.arch }}
+        # Selection Test/Integ/Prod Environment
+        - key: env
+          operator: In
+          values:
+          - {{ .Values.env }}
+        # Selection Worker for dees
+        - key: liberty
+          operator: In
+          values:
+          - "true"
+
+{{/* #### jicofo #### */}}
+jicofo:
+  {{  $contxt := .Values.jitsi.jicofo }}
+  repository: {{ $contxt.repository }}
+  tag: {{ $contxt.tag }}
+  resources:
+  {{- range $k, $v := $contxt.resources }}
+    {{ $k }}: 
+      {{- range $k1, $v1 :=  . }}
+        {{ $k1 }}: "{{ $v1 }}"
+  {{- end }}
+  {{- end }}
+
+{{/* #### jvb #### */}}
+jvb:
+  {{  $contxt := .Values.jitsi.jvb }}
+  repository: {{ $contxt.repository }}
+  tag: {{ $contxt.tag }}
+  resources:
+  {{- range $k, $v := $contxt.resources }}
+    {{ $k }}: 
+      {{- range $k1, $v1 :=  . }}
+        {{ $k1 }}: "{{ $v1 }}"
+  {{- end }}
+  {{- end }}
+
+{{/* #### prosody #### */}}
+prosody:
+  {{  $contxt := .Values.jitsi.prosody }}
+  repository: {{ $contxt.repository }}
+  tag: {{ $contxt.tag }}
+  resources:
+  {{- range $k, $v := $contxt.resources }}
+    {{ $k }}: 
+      {{- range $k1, $v1 :=  . }}
+        {{ $k1 }}: "{{ $v1 }}"
+  {{- end }}
+  {{- end }}
+
+{{/* #### web #### */}}
+web:
+  {{  $contxt := .Values.jitsi.web }}
+  repository: {{ $contxt.repository }}
+  tag: {{ $contxt.tag }}
+  resources:
+  {{- range $k, $v := $contxt.resources }}
+    {{ $k }}: 
+      {{- range $k1, $v1 :=  . }}
+        {{ $k1 }}: "{{ $v1 }}"
+  {{- end }}
+  {{- end }}

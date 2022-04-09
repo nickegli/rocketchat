@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "jitsi.fullname" . }}-jvb
+  labels:
+{{- include "jitsi.labels" . | nindent 4 }}
+spec:
+  type: NodePort
+  externalTrafficPolicy: Cluster
+  ports:
+  - port: 30300
+    protocol: UDP
+    targetPort: 30300
+    nodePort: 30300
+  selector:
+    app.kubernetes.io/name: {{ include "jitsi.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}

@@ -1,0 +1,105 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "jitsi.fullname" . }}
+  labels:
+{{- include "jitsi.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  strategy:
+    rollingUpdate:
+      maxSurge: {{ .Values.deployment.rollingUpdate.maxSurge }}
+      maxUnavailable: {{ .Values.deployment.rollingUpdate.maxUnavailable }}
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "jitsi.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+{{- include "jitsi.labels" . | nindent 8 }}
+    spec:
+      imagePullSecrets:
+        {{- range .Values.image.pullSecrets }}
+        - name: {{ . }}
+        {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+########################### web ###################################
+        - name: "jitsi-web"
+          envFrom:
+          - secretRef:
+              name: {{ include "jitsi.fullname" . }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.registry }}/{{ .Values.web.repository }}:{{ .Values.web.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.web.resources | nindent 12 }}
+#################### jicofo ###############################
+        - name: "jitsi-jicofo"
+          envFrom:
+          - secretRef:
+              name: {{ include "jitsi.fullname" . }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.registry }}/{{ .Values.jicofo.repository }}:{{ .Values.jicofo.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          resources:
+            {{- toYaml .Values.jicofo.resources | nindent 12 }}
+###################### jvb ####################################
+        - name: "jitsi-jvb"
+          envFrom:
+          - secretRef:
+              name: {{ include "jitsi.fullname" . }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.registry }}/{{ .Values.jvb.repository }}:{{ .Values.jvb.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: video
+              containerPort: 30300
+              protocol: UDP
+          resources:
+            {{- toYaml .Values.jvb.resources | nindent 12 }}
+######################### prosody ###################################
+        - name: "jitsi-prosody"
+          envFrom:
+          - secretRef:
+              name: {{ include "jitsi.fullname" . }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.registry }}/{{ .Values.prosody.repository }}:{{ .Values.prosody.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: xmppclient
+              containerPort: 5222
+              protocol: TCP
+            - name: xmppserver
+              containerPort: 5347
+              protocol: TCP
+            - name: xmppbosh
+              containerPort: 5280
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.prosody.resources | nindent 12 }}
+##############################################################
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    

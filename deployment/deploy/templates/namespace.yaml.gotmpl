@@ -1,0 +1,4 @@
+storageClass: "{{ .Values.project }}-{{ .Values.env }}-localvolume"
+volumeBaseName: {{ .Values.project }}-{{ .Values.env }}
+volumeBasePath: {{ .Values.project }}/{{ .Values.env }}
+volumeName: {{ .Values.project }}-{{ .Values.env }}-nfs-backup

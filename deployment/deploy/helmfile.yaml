@@ -1,0 +1,44 @@
+environments:
+  default:
+    values:
+    - ./values.yaml
+    - ./runenv.yaml
+
+repositories:
+- name: chartmuseum
+  url: XXXX
+
+releases:
+- name: {{ .Values.project }}-{{ .Values.env }}-namespace
+  namespace: {{ .Namespace }}
+  chart: ./charts/namespace
+  values:
+  - ./values.yaml
+  - ./templates/namespace.yaml.gotmpl
+  - ./runenv.yaml
+
+- name: {{ .Values.project }}-{{ .Values.env }}-rocketchat
+  namespace: {{ .Namespace }}
+  chart: ./charts/rocketchat
+  needs:
+  - {{ .Values.project }}-{{ .Values.env }}-namespace
+  - {{ .Values.project }}-{{ .Values.env }}-mongodb
+  values:
+  - ./templates/rocketchat.yaml.gotmpl
+  
+- name: {{ .Values.project }}-{{ .Values.env }}-mongodb
+  namespace: {{ .Namespace }}
+  chart: chartmuseum/mongodb
+  version: 0.1.1-9.1.0
+  needs:
+  - {{ .Values.project }}-{{ .Values.env }}-namespace
+  values:
+  - ./templates/mongodb.yaml.gotmpl
+
+- name: {{ .Values.project }}-{{ .Values.env }}-jitsi
+  namespace: {{ .Namespace }}
+  chart: ./charts/jitsi
+  needs:
+  - {{ .Values.project }}-{{ .Values.env }}-namespace
+  values:
+  - ./templates/jitsi.yaml.gotmpl

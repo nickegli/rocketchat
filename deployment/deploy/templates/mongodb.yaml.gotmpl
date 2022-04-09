@@ -1,0 +1,55 @@
+{{/* #### mongodb #### */}}
+{{  $contxt := .Values.mongodb }}
+
+env: {{ .Values.env }}
+project: {{ .Values.project }}
+
+architecture: "replicaset"
+
+replicaCount: "{{ $contxt.replicaCount }}"
+
+storageClass: "{{ .Values.project }}-{{ .Values.env }}-localvolume"
+volumeBaseName: {{ .Values.project }}-{{ .Values.env }} 
+
+arbiter:
+  enabled: false
+
+NOservice:
+  type: NodePort     
+
+persistence:
+  storageClass: "{{ .Values.project }}-{{ .Values.env }}-localvolume"   
+
+pdb:
+   create: true
+{{ range $k, $v := $contxt.PodDisruptionBudget }}
+   {{ $k }}: "{{ $v }}"
+{{ end }}
+  
+auth:
+{{ range $k, $v := $contxt.auth }}
+   {{ $k }}: "{{ $v }}"
+{{ end }}
+
+image:
+  repository: {{ $contxt.repository }}
+  tag: {{ $contxt.tag }}
+  pullSecrets: {{ .Values.pullSecrets }}
+
+{{/* #### backupFeature #### */}}
+backupFeature:
+  {{  $contxt := .Values.mongodb.backupFeature }}
+  schedule: {{ $contxt.schedule }}
+  
+  secrets:
+  {{ range $k, $v := $contxt.secrets }}
+     {{ $k }}: "{{ $v }}"
+  {{ end }}
+
+  persistence:
+    nfsMatchLabels: backupFeature-volume
+    nfsAccessMode: ReadWriteMany
+  {{ range $k, $v := $contxt.persistence }}
+    {{ $k }}: "{{ $v }}"
+  {{ end }}
+

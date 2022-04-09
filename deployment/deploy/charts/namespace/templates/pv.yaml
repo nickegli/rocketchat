@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: List
+items:
+{{ range $index, $hostname := .Values.volumeHosts }}
+- apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    name: "{{ $.Values.volumeBaseName }}-mongodb-{{ $hostname }}-{{ $index }}"
+    namespace: {{ $.Release.Namespace }}
+    finalizers:
+    - kubernetes.io/pv-protection
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    capacity:
+      storage: {{ $.Values.mongodb.storageSize | quote }}
+    claimRef:
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      name: "datadir-{{ $.Values.volumeBaseName }}-mongodb-{{ $index }}"
+      namespace: {{ $.Release.Namespace }}
+    local:
+      path: "/data/{{ $.Values.volumeBasePath }}/mongodb-{{ $index }}"
+    nodeAffinity:
+      required:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: kubernetes.io/hostname
+            operator: In
+            values:
+            - {{ $hostname }}
+    persistentVolumeReclaimPolicy: Retain
+    storageClassName: {{ $.Values.storageClass | quote }}
+    volumeMode: "Filesystem"
+{{- end }}
